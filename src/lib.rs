@@ -45,3 +45,21 @@ pub trait Storage: ReadStorage {
 	/// and might as such do RMW operations at an undesirable performance impact.
 	fn try_write(&mut self, offset: u32, bytes: &[u8]) -> Result<(), Self::Error>;
 }
+
+/// Storage that supports erasing of data pages
+pub trait ErasableStorage {
+	/// An enumeration of storage erase errors
+	type Error;
+
+	/// The minimum number of bytes the storage peripheral can erase
+	const ERASE_SIZE: u32;
+
+	/// Erase the given storage range, clearing all data within `[from..to]`.
+	/// The given range will contain all 1s afterwards.
+	///
+	/// This should return an error if the range is not aligned to a proper
+	/// erase resolution
+	/// If power is lost during erase, contents of the page are undefined.
+	/// `from` and `to` must both be multiples of `ERASE_SIZE` and `from` <= `to`.
+	fn try_erase(&mut self, from: u32, to: u32) -> Result<(), Self::Error>;
+}
